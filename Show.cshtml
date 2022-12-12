@@ -1,0 +1,119 @@
+﻿@model List<List<Class>>
+
+<table class="table">
+    
+    <tr align="center">
+
+        <th>
+            Табельный номер
+        </th>
+        <th>
+            ФИО
+        </th>
+        <th>
+            Должность
+        </th>
+        <th>
+            Дата в должности
+        </th>
+        <th>
+            Дата приема на работу
+        </th>
+        <th>
+            Дата увольнения
+        </th>
+         <th>
+           Департамент
+        </th>
+        <th>
+            Отдел
+        </th>
+        <th>
+            Сектор
+        </th>
+        <th>
+            Статус работника
+        </th>
+         <th>
+            Баланс
+        </th>
+         <th>
+            Списочный состав
+        </th>
+        <th>
+            Информация о контракте: начало
+        </th>
+        <th>
+            Пароль
+        </th>
+        <th>
+            Информация о контракте: Окончание
+        </th>
+        <th>
+            Кто по жизни
+        </th>
+        <th>
+            email
+        </th>
+        </tr>
+    @foreach(var item in Model )
+    {
+        @foreach(var clas in item)
+        {
+            <tr>
+                <td>
+                    @clas.service_number
+                </td>
+                <td>
+                    @clas.fullname
+                </td>
+                <td>
+                    @clas.position_name
+                </td>
+                <td>
+                    @clas.position_date
+                </td>
+                <td>
+                    @clas.hire_date
+                </td>
+                <td>
+                    @clas.dismiss_date
+                </td>
+                <td>
+                    @clas.department
+                </td>
+                 <td>
+                    @clas.division_name
+                </td>
+                 <td>
+                    @clas.sector_name
+                </td>
+                 <td>
+                    @clas.status
+                </td>
+                 <td>
+                    @clas.workday_balance
+                </td>
+                 <td>
+                    @clas.list_number
+                </td>
+                 <td>
+                    @clas.start_date
+                </td>
+                 <td>
+                    @clas.password
+                </td>
+                <td>
+                    @clas.end_date
+                </td>
+                <td>
+                    @clas.user_role
+                </td>
+                <td>
+                    @clas.email
+                </td>
+             </tr>
+        }    
+    }
+}
+</table>
