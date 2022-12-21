@@ -1,9 +1,0 @@
-create PROCEDURE insert_data_in_Class(service_number integer, fullname text, position_name text,
-position_date timestamp without time zone, hire_date timestamp without time zone, dismiss_date timestamp without time zone, department text, division_name text, sector_name text, 
-status text, workday_balance text, list_number text, start_date timestamp without time zone, pass text, end_date timestamp without time zone, user_role integer, email text)
-LANGUAGE SQL
-AS $$
-INSERT INTO public."USER_INFO" VALUES (service_number, fullname, position_name,
-position_date, hire_date, dismiss_date, department, division_name, sector_name, status,
-workday_balance, list_number, start_date, pass, end_date, user_role, email);
-$$;
