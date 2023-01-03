@@ -7,88 +7,36 @@ using Bank.Domain.ViewModels.Account;
 using Bank.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bank.Service.Implementations
 {
-    public class AccountService: IAccountService
+    public class AccountService : IAccountService
     {
-        private readonly IBaseRepository<Profile> _proFileRepository;
         private readonly IBaseRepository<UserInfo> _userInfoRepository;
+        private readonly ILogger<AccountService> _logger;
 
         public AccountService(IBaseRepository<UserInfo> userInfoRepository,
-            ILogger<AccountService> logger, IBaseRepository<Profile> proFileRepository)
+            ILogger<AccountService> logger)
         {
             _userInfoRepository = userInfoRepository;
-            _proFileRepository = proFileRepository;
-        }
-
-        public async Task<BaseResponse<ClaimsIdentity>> Register(RegisterViewModel model)
-        {
-            try
-            {
-                var user = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.login == model.Login);
-                if (user != null)
-                {
-                    return new BaseResponse<ClaimsIdentity>()
-                    {
-                        Description = "Пользователь с таким логином уже есть",
-                    };
-                }
-
-                user = new UserInfo()
-                {
-                    login = model.Login,
-                    user_role = Role.User,
-                    pass = HashPasswordHelper.HashPassowrd(model.Password),
-                };
-
-                var profile = new Profile()
-                {
-                    service_number = user.service_number,
-                };
-
-                await _userInfoRepository.Create(user);
-                await _proFileRepository.Create(profile);
-                var result = Authenticate(user);
-
-                return new BaseResponse<ClaimsIdentity>()
-                {
-                    Data = result,
-                    Description = "Объект добавился",
-                    StatusCode = StatusCode.OK
-                };
-            }
-            catch (Exception ex)
-            {
-                //_logger.LogError(ex, $"[Register]: {ex.Message}");
-                return new BaseResponse<ClaimsIdentity>()
-                {
-                    Description = ex.Message,
-                    StatusCode = StatusCode.InternalServerError
-                };
-            }
+            _logger = logger;
         }
 
         public async Task<BaseResponse<ClaimsIdentity>> Login(LoginViewModel model)
         {
             try
             {
-                var user = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.login == model.Login);
-                if (user == null)
+                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.login == model.Login);
+                if (userInfo == null)
                 {
                     return new BaseResponse<ClaimsIdentity>()
                     {
                         Description = "Пользователь не найден"
                     };
                 }
-
-                if (user.pass != //HashPasswordHelper.HashPassowrd
+                //userInfo.rememberMe = model.RememberMe;
+                if (userInfo.pass != //HashPasswordHelper.HashPassowrd
                                  (model.Password))
                 {
                     return new BaseResponse<ClaimsIdentity>()
@@ -96,7 +44,7 @@ namespace Bank.Service.Implementations
                         Description = "Неверный пароль или логин"
                     };
                 }
-                var result = Authenticate(user);
+                var result = Authenticate(userInfo);
 
                 return new BaseResponse<ClaimsIdentity>()
                 {
@@ -106,7 +54,7 @@ namespace Bank.Service.Implementations
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, $"[Login]: {ex.Message}");
+                _logger.LogError(ex, $"[Login]: {ex.Message}");
                 return new BaseResponse<ClaimsIdentity>()
                 {
                     Description = ex.Message,
@@ -129,7 +77,9 @@ namespace Bank.Service.Implementations
                     };
                 }
 
-                user.pass = HashPasswordHelper.HashPassowrd(model.NewPassword);
+                user.pass = //HashPasswordHelper.HashPassowrd(
+                            model.NewPassword;
+                            //);
                 await _userInfoRepository.Update(user);
 
                 return new BaseResponse<bool>()
@@ -142,7 +92,7 @@ namespace Bank.Service.Implementations
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, $"[ChangePassword]: {ex.Message}");
+                _logger.LogError(ex, $"[ChangePassword]: {ex.Message}");
                 return new BaseResponse<bool>()
                 {
                     Description = ex.Message,
@@ -156,7 +106,7 @@ namespace Bank.Service.Implementations
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userInfo.login),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, userInfo.user_role.ToString())
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, userInfo.user_role.ToString()),
             };
             return new ClaimsIdentity(claims, "ApplicationCookie",
                 ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);

@@ -1,5 +1,6 @@
 ﻿using Bank.Domain.Models;
 using Bank.Models;
+using Bank.Service.Interfaces;
 using ExcelDataReader;
 using Npgsql;
 using System.Data;
@@ -8,8 +9,12 @@ namespace Bank.Services
 {
     public class ImportService
     {
-       
+        private readonly IAccountService _accountService;
 
+        public ImportService(IAccountService accountService)
+        {
+            _accountService = accountService;
+        }
         public static void ImportUserInfo(string filePath, NpgsqlConnection nc)
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -39,71 +44,10 @@ namespace Bank.Services
                         case 58: temp.end_date = Convert.ToDateTime(table.Rows[rowCounter][colCounter]); break;
                     }
                 }
-            
-            excelDataReader.Close();
 
-          
+                excelDataReader.Close();
 
-                //InsertToDB
 
-                NpgsqlCommand cmd = new NpgsqlCommand("Select * from public.\"USER_INFO\" where service_number=\'" + temp.service_number + "\'", nc);
-                var reader = cmd.ExecuteReader();
-                Random rnd = new Random();
-
-                if (reader.HasRows) //пользователь с таким service_number нашелся
-                {
-                    NpgsqlCommand com = new NpgsqlCommand("call update_data_in_User_Info" + "(:service_number, :fullname, :position_name," +
-                    " :position_date, :hire_date, :dismiss_date, :department, :division_name, :sector_name, :status," +
-                    " :workday_balance, :list_number, :start_date, :pass, :end_date, :user_role, :login)", nc);
-                    com.Parameters.AddWithValue("service_number", DbType.Int32).Value = temp.service_number;
-                    com.Parameters.AddWithValue("fullname", DbType.String).Value = temp.fullname;
-                    com.Parameters.AddWithValue("position_name", DbType.String).Value = temp.position_name;
-                    com.Parameters.AddWithValue("position_date", DbType.Date).Value = temp.position_date;
-                    com.Parameters.AddWithValue("hire_date", DbType.Date).Value = temp.hire_date;
-                    com.Parameters.AddWithValue("dismiss_date", DbType.Date).Value = DBNull.Value;
-                    com.Parameters.AddWithValue("department", DbType.String).Value = temp.department;
-                    com.Parameters.AddWithValue("division_name", DbType.String).Value = temp.division_name;
-                    com.Parameters.AddWithValue("sector_name", DbType.String).Value = temp.sector_name;
-                    com.Parameters.AddWithValue("status", DbType.String).Value = temp.status;
-                    com.Parameters.AddWithValue("workday_balance", DbType.String).Value = temp.workday_balance;
-                    com.Parameters.AddWithValue("list_number", DbType.String).Value = temp.list_number;
-                    com.Parameters.AddWithValue("start_date", DbType.Date).Value = temp.start_date;
-                    com.Parameters.AddWithValue("pass", DbType.String).Value = "генерировать!"; //не учтено в процедуре
-                    com.Parameters.AddWithValue("end_date", DbType.Date).Value = temp.end_date;
-                    com.Parameters.AddWithValue("user_role", DbType.Int32).Value = 0; //учтено в процедуре
-                    com.Parameters.AddWithValue("login", DbType.String).Value = rnd.Next().ToString(); //учтено в процедуре
-                    com.CommandType = CommandType.Text;
-                    cmd.Dispose(); //удаляем команду и закрываем чтение
-                    reader.Close();
-                    com.ExecuteNonQuery(); //выполнение процедуры
-                }
-                else //не нашелся
-                {
-                    NpgsqlCommand com = new NpgsqlCommand("call insert_data_in_User_Info" + "(:service_number, :fullname, :position_name," +
-                   " :position_date, :hire_date, :dismiss_date, :department, :division_name, :sector_name, :status," +
-                   " :workday_balance, :list_number, :start_date, :pass, :end_date, :user_role, :email)", nc);
-                    com.Parameters.AddWithValue("service_number", DbType.Int32).Value = temp.service_number;
-                    com.Parameters.AddWithValue("fullname", DbType.String).Value = temp.fullname;
-                    com.Parameters.AddWithValue("position_name", DbType.String).Value = temp.position_name;
-                    com.Parameters.AddWithValue("position_date", DbType.Date).Value = temp.position_date;
-                    com.Parameters.AddWithValue("hire_date", DbType.Date).Value = temp.hire_date;
-                    com.Parameters.AddWithValue("dismiss_date", DbType.Date).Value = DBNull.Value;
-                    com.Parameters.AddWithValue("department", DbType.String).Value = temp.department;
-                    com.Parameters.AddWithValue("division_name", DbType.String).Value = temp.division_name;
-                    com.Parameters.AddWithValue("sector_name", DbType.String).Value = temp.sector_name;
-                    com.Parameters.AddWithValue("status", DbType.String).Value = temp.status;
-                    com.Parameters.AddWithValue("workday_balance", DbType.String).Value = temp.workday_balance;
-                    com.Parameters.AddWithValue("list_number", DbType.String).Value = temp.list_number;
-                    com.Parameters.AddWithValue("start_date", DbType.Date).Value = temp.start_date;
-                    com.Parameters.AddWithValue("pass", DbType.String).Value = "генерировать!"; //учтено в процедуре
-                    com.Parameters.AddWithValue("end_date", DbType.Date).Value = temp.end_date;
-                    com.Parameters.AddWithValue("user_role", DbType.Int32).Value = 0; //учтено в процедуре
-                    com.Parameters.AddWithValue("email", DbType.String).Value = rnd.Next().ToString(); //учтено в процедуре
-                    com.CommandType = CommandType.Text;
-                    cmd.Dispose();
-                    reader.Close();
-                    com.ExecuteNonQuery();
-                }
             }
         }
 
@@ -127,7 +71,7 @@ namespace Bank.Services
                 }
 
                 excelDataReader.Close();
-           
+
 
                 //InsertToDB
                 NpgsqlCommand cmd = new NpgsqlCommand("call insert_data_in_User_Dismiss" + "(:new_dismiss_date, :service_number)", nc);
@@ -255,7 +199,7 @@ namespace Bank.Services
             IExcelDataReader excelDataReader = ExcelReaderFactory.CreateOpenXmlReader(fStream);
             DataSet resultDataSet = excelDataReader.AsDataSet();
             var table = resultDataSet.Tables[0];
-            for (int colCounter = 1; colCounter <= table.Columns.Count-1; colCounter++)
+            for (int colCounter = 1; colCounter <= table.Columns.Count - 1; colCounter++)
             {
                 Matrix temp = new Matrix(); //Model
                 temp.structure_role = Convert.ToString(table.Rows[0][1]);
@@ -281,7 +225,7 @@ namespace Bank.Services
                 NpgsqlCommand cmd = new NpgsqlCommand("Select * from public.\"MATRIX\" where structure_type=\'" + temp.structure_type + "\'", nc);
                 var reader = cmd.ExecuteReader();
                 int RowNumber = 0;
-                while(reader.Read())
+                while (reader.Read())
                 {
                     RowNumber++;
                 }
@@ -329,19 +273,19 @@ namespace Bank.Services
         }
         public static void ImportAssessmentInfo(string filePath, NpgsqlConnection nc)
         {
-         
-           
+
+
         }
 
         public static void ImportAssessmentResult(string filePath, NpgsqlConnection nc)
         {
-           
+
         }
 
         public static void ImportKKResult(string filePath, NpgsqlConnection nc)
         {
-          
-        
+
+
         }
     }
 }

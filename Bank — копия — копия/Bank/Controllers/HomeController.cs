@@ -1,21 +1,24 @@
 ﻿using Bank.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using Npgsql;
+using Bank.Service.Interfaces;
 using Bank.Services;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Aspose.Cells;
-using Bank.DAL.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Npgsql;
+using System.Diagnostics;
 
 namespace Bank.Controllers
 {
     public class HomeController : Controller
     {
-       
+        private readonly IAccountService _accountService;
 
+        public HomeController(IAccountService accountService)
+        {
+            _accountService = accountService;
+        }
         public IActionResult Index()
         {
-            return View();
+            if (User.Identity.IsAuthenticated) return View();
+            return RedirectToAction("Login", "Account");
         }
 
         public async Task<IActionResult> Import(IFormFile file)
@@ -37,7 +40,7 @@ namespace Bank.Controllers
             string connString = "Server=localhost; Database=postgres; User Id = postgres; Password = 12345";
             NpgsqlConnection nc = new NpgsqlConnection(connString);
             nc.Open();
-            using(var tx = nc.BeginTransaction())
+            using (var tx = nc.BeginTransaction())
             {
                 foreach (string filePath in filesPathList)
                 {
@@ -55,7 +58,7 @@ namespace Bank.Controllers
                 tx.Commit();
             }
             //тут можно начинать транзакцию и если гдето в импорте выскочит ошибка там же ее заканчивать и возвращать чтото типа вью
-           
+
             //тут комитить транзакцию
             nc.Close();
             return await Task.Run(() => View("Index"));
@@ -66,7 +69,7 @@ namespace Bank.Controllers
             return View();
         }
 
-    
+
         public IActionResult UserStructure(int file)
         {
             var list = new List<List<UserStructure>>();
@@ -80,28 +83,28 @@ namespace Bank.Controllers
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                   UserStructure temp = new UserStructure();
-                   temp.service_number = Convert.ToInt32(reader[0]);
-                   temp.grade_group = Convert.ToString(reader[1]);
-                   temp.grade_number = Convert.ToString(reader[2]); 
-                   temp.structure_role = Convert.ToString(reader[3]); 
-                   temp.subrole = Convert.ToString(reader[4]);
+                    UserStructure temp = new UserStructure();
+                    temp.service_number = Convert.ToInt32(reader[0]);
+                    temp.grade_group = Convert.ToString(reader[1]);
+                    temp.grade_number = Convert.ToString(reader[2]);
+                    temp.structure_role = Convert.ToString(reader[3]);
+                    temp.subrole = Convert.ToString(reader[4]);
                     if (reader[5] is DBNull) temp.subrole_date = null;
                     else temp.subrole_date = Convert.ToDateTime(reader[5]);
-                   temp.subrole_reason = Convert.ToString(reader[6]);
-                   temp.role_category = Convert.ToString(reader[7]); 
-                   temp.fot_mark = Convert.ToString(reader[8]); 
-                   temp.manager_service_number = Convert.ToInt32(reader[9]); 
-                   temp.manager_fullname = Convert.ToString(reader[10]);
-                   temp.chief_service_number = Convert.ToInt32(reader[11]);
-                   temp.chief_fullname = Convert.ToString(reader[12]);
-                   temp.director_service_number = Convert.ToInt32(reader[13]); 
-                   temp.director_fullname = Convert.ToString(reader[14]);
-                   temp.block_name = Convert.ToString(reader[15]);
+                    temp.subrole_reason = Convert.ToString(reader[6]);
+                    temp.role_category = Convert.ToString(reader[7]);
+                    temp.fot_mark = Convert.ToString(reader[8]);
+                    temp.manager_service_number = Convert.ToInt32(reader[9]);
+                    temp.manager_fullname = Convert.ToString(reader[10]);
+                    temp.chief_service_number = Convert.ToInt32(reader[11]);
+                    temp.chief_fullname = Convert.ToString(reader[12]);
+                    temp.director_service_number = Convert.ToInt32(reader[13]);
+                    temp.director_fullname = Convert.ToString(reader[14]);
+                    temp.block_name = Convert.ToString(reader[15]);
                     if (reader[16] is DBNull) temp.curator_service_number = null;
-                    else temp.curator_service_number = Convert.ToInt32(reader[16]); 
-                   temp.curator_fullname = Convert.ToString(reader[17]);
-                   listtemp.Add(temp);
+                    else temp.curator_service_number = Convert.ToInt32(reader[16]);
+                    temp.curator_fullname = Convert.ToString(reader[17]);
+                    listtemp.Add(temp);
                 }
 
                 list.Add(listtemp);

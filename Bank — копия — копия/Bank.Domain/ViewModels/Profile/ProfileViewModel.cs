@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,19 +8,12 @@ namespace Bank.Domain.ViewModels.Profile
 {
     public class ProfileViewModel
     {
-        public long Id { get; set; }
+        public DateTime nextTestDate { get; set; }
+        public string role { get; set; }
+        public string kpe { get; set; }
+        public string vd { get; set; }
+        public string kk { get; set; }
+        public string status { get; set; }
 
-        [Required(ErrorMessage = "Укажите возраст")]
-        [Range(0, 150, ErrorMessage = "Диапазон возраста должен быть от 0 до 150")]
-        public byte Age { get; set; }
-
-        [Required(ErrorMessage = "Укажите адрес")]
-        [MinLength(5, ErrorMessage = "Минимальная длина должна быть больше 5 символов")]
-        [MaxLength(200, ErrorMessage = "Максимальная длина должна быть меньше 200 символов")]
-        public string Address { get; set; }
-
-        public string UserName { get; set; }
-
-        public string NewPassword { get; set; }
     }
 }

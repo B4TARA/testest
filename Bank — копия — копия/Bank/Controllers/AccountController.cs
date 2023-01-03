@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Bank.Domain.ViewModels.Account;
+using Bank.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Bank.Service.Interfaces;
-using Bank.Domain.ViewModels.Account;
 
 namespace Bank.Controllers
 {
@@ -17,52 +17,56 @@ namespace Bank.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register() => View();
-
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public IActionResult Login()
         {
-            if (ModelState.IsValid)
+            if (!User.Identity.IsAuthenticated)
             {
-                var response = await _accountService.Register(model);
-                if (response.StatusCode == Domain.Enum.StatusCode.OK)
-                {
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(response.Data));
-
-                    return RedirectToAction("Index", "Home");
-                }
-                ModelState.AddModelError("", response.Description);
+                return View();
             }
-            return View(model);
+            else return RedirectToAction("Index", "Home");
         }
 
-        [HttpGet]
-        public IActionResult Login() => View();
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, bool rememberMe)
         {
-            if (ModelState.IsValid)
-            {
-                var response = await _accountService.Login(model);
-                if (response.StatusCode == Domain.Enum.StatusCode.OK)
+                if (ModelState.IsValid)
                 {
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(response.Data));
-                    return RedirectToAction("Index", "Home");
+                    var response = await _accountService.Login(model);
+                    if (response.StatusCode == Domain.Enum.StatusCode.OK)
+                    {
+                    if(rememberMe)
+                    {
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                            new ClaimsPrincipal(response.Data),
+                            new AuthenticationProperties { IsPersistent = true });
+                    }
+                    else
+                    {
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                            new ClaimsPrincipal(response.Data),
+                            new AuthenticationProperties { IsPersistent = false
+                            ,ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(5) 
+                            });
+                    }
+                        
+                        
+                        return RedirectToAction("Index", "Home");
+                    }
+                    ModelState.AddModelError("", response.Description);
                 }
-                ModelState.AddModelError("", response.Description);
-            }
-            return View(model);
+                return View(model);
         }
 
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Account");
         }
+
+        [HttpGet]
+        public IActionResult ChangePassword() => View();
 
         [HttpPost]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
@@ -72,12 +76,22 @@ namespace Bank.Controllers
                 var response = await _accountService.ChangePassword(model);
                 if (response.StatusCode == Domain.Enum.StatusCode.OK)
                 {
-                    return Json(new { description = response.Description });
+                    return RedirectToAction("Login", "Account");
+                    //return Json(new { description = response.Description });
                 }
+                ModelState.AddModelError("", response.Description);
             }
-            var modelError = ModelState.Values.SelectMany(v => v.Errors);
+            return View(model);
+        }
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new { modelError.FirstOrDefault().ErrorMessage });
+        [HttpGet]
+        public IActionResult Lockscreen()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return View();
+            }
+            else return RedirectToAction("Index", "Home");
         }
     }
 }

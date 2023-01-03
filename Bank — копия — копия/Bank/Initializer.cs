@@ -17,13 +17,11 @@ namespace Bank
         public static void InitializeRepositories(this IServiceCollection services)
         {
             services.AddScoped<IBaseRepository<UserInfo>, UserInfoRepository>();
-            services.AddScoped<IBaseRepository<Profile>, ProfileRepository>();
         }
 
         public static void InitializeServices(this IServiceCollection services)
         {
             services.AddScoped<IUserInfoService, UserInfoService>();
-            services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<IAccountService, AccountService>();
         }
     }

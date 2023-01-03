@@ -1,34 +1,55 @@
 ﻿using Bank.DAL.Interfaces;
 using Bank.Domain.Enum;
+using Bank.Domain.Helpers;
 using Bank.Domain.Models;
 using Bank.Domain.Response;
+using Bank.Domain.ViewModels.Account;
 using Bank.Domain.ViewModels.UserInfo;
-using Bank.Models;
 using Bank.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Bank.Service.Implementations
 {
     public class UserInfoService : IUserInfoService
     {
         private readonly IBaseRepository<UserInfo> _userInfoRepository;
-        public UserInfoService(IBaseRepository<UserInfo> userInfoRepository)
+        private readonly ILogger<UserInfoService> _logger;
+        public UserInfoService(ILogger<UserInfoService> logger, IBaseRepository<UserInfo> userInfoRepository)
         {
+            _logger = logger;
             _userInfoRepository = userInfoRepository;
         }
 
-        public async Task<IBaseResponse<UserInfo>> GetUserInfo(int id)
+        public async Task<BaseResponse<IEnumerable<UserInfo>>> GetAllUserInfo()
         {
             try
             {
-                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x=>x.service_number == id);
+                var allUserInfo = await _userInfoRepository.GetAll().ToListAsync();
+
+                _logger.LogInformation($"[UserService.GetUsers] получено элементов {allUserInfo.Count}");
+                return new BaseResponse<IEnumerable<UserInfo>>()
+                {
+                    Data = allUserInfo,
+                    StatusCode = StatusCode.OK
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[UserSerivce.GetUsers] error: {ex.Message}");
+                return new BaseResponse<IEnumerable<UserInfo>>()
+                {
+                    Description = $"[GetAllUserInfo] : {ex.Message}",
+                    StatusCode = StatusCode.InternalServerError
+                };
+            }
+        }
+        public async Task<BaseResponse<UserInfo>> GetUserInfo(string login)
+        {
+            try
+            {
+                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.login == login);
                 if (userInfo == null)
                 {
                     return new BaseResponse<UserInfo>()
@@ -72,22 +93,22 @@ namespace Bank.Service.Implementations
                 };
             }
         }
-
-        public async Task<IBaseResponse<bool>> DeleteUserInfo(int id)
+        public async Task<IBaseResponse<bool>> DeleteUserInfo(int service_number)
         {
             try
             {
-                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x=>x.service_number == id);
+                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.service_number == service_number);
                 if (userInfo == null)
                 {
                     return new BaseResponse<bool>()
                     {
-                        Description = "User not found",
                         StatusCode = StatusCode.UserNotFound,
                         Data = false
                     };
                 }
                 await _userInfoRepository.Delete(userInfo);
+                _logger.LogInformation($"[UserService.DeleteUser] пользователь удален");
+
                 return new BaseResponse<bool>()
                 {
                     Data = true,
@@ -96,6 +117,7 @@ namespace Bank.Service.Implementations
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"[UserSerivce.DeleteUser] error: {ex.Message}");
                 return new BaseResponse<bool>()
                 {
                     Description = $"[DeleteUserInfo] : {ex.Message}",
@@ -103,11 +125,19 @@ namespace Bank.Service.Implementations
                 };
             }
         }
-
         public async Task<IBaseResponse<UserInfo>> CreateUserInfo(UserInfoViewModel model)
         {
             try
             {
+                var user = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.service_number == model.service_number);
+                if (user != null)
+                {
+                    return new BaseResponse<UserInfo>()
+                    {
+                        Description = "Пользователь с таким service_number уже есть",
+                        StatusCode = StatusCode.UserAlreadyExists
+                    };
+                }
                 var userInfo = new UserInfo()
                 {
                     service_number = model.service_number,
@@ -128,65 +158,43 @@ namespace Bank.Service.Implementations
                     user_role = model.user_role,
                     login = model.login
                 };
-                await _userInfoRepository.Create(userInfo);
-                return new BaseResponse<UserInfo>()
-                {
-                    StatusCode = StatusCode.OK,
-                    Data = userInfo
-                };
-            }
-            catch (Exception ex)
-            {
-                return new BaseResponse<UserInfo>()
-                {
-                    Description = $"[Create] : {ex.Message}",
-                    StatusCode = StatusCode.InternalServerError
-                };
-            }
-        }
 
-        public IBaseResponse<List<UserInfo>> GetAllUserInfo()
-        {
-            try
-            {
-                var allUserInfo = _userInfoRepository.GetAll().ToList();
-                if(!allUserInfo.Any())
+                await _userInfoRepository.Create(user);
+                _logger.LogInformation($"[UserService.CreateUser] пользователь добавлен");
+
+                return new BaseResponse<UserInfo>()
                 {
-                    return new BaseResponse<List<UserInfo>>()
-                    {
-                        Description = "Найдено 0 элементов",
-                        StatusCode = StatusCode.OK
-                    };
-                }
-                return new BaseResponse<List<UserInfo>>()
-                {
-                    Data = allUserInfo,
+                    Data = user,
+                    Description = "Пользователь добавлен",
                     StatusCode = StatusCode.OK
                 };
             }
-            catch(Exception ex)
+
+            catch (Exception ex)
             {
-                return new BaseResponse<List<UserInfo>>()
+                _logger.LogError(ex, $"[UserService.Create] error: {ex.Message}");
+                return new BaseResponse<UserInfo>()
                 {
-                    Description = $"[GetAllUserInfo] : {ex.Message}",
-                    StatusCode = StatusCode.InternalServerError
+                    StatusCode = StatusCode.InternalServerError,
+                    Description = $"Внутренняя ошибка: {ex.Message}"
                 };
             }
         }
-
-        public async Task<IBaseResponse<UserInfo>> EditUserInfo(int id, UserInfoViewModel model)
+        public async Task<IBaseResponse<UserInfo>> EditUserInfo(int service_number, UserInfoViewModel model)
         {
             try
             {
-                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x=>x.service_number == id);
-                if(userInfo == null)
+                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.service_number == service_number);
+                if (userInfo == null)
                 {
+                    _logger.LogInformation($"[UserService.EditUser] пользователь не найден");
                     return new BaseResponse<UserInfo>()
                     {
-                        Description = "Car not found",
+                        Description = "UserInfo not found",
                         StatusCode = StatusCode.UserNotFound
                     };
                 }
+
                 userInfo.service_number = model.service_number;
                 userInfo.fullname = model.fullname;
                 userInfo.position_name = model.position_name;
@@ -206,6 +214,7 @@ namespace Bank.Service.Implementations
                 userInfo.login = model.login;
 
                 await _userInfoRepository.Update(userInfo);
+                _logger.LogInformation($"[UserService.EditUser] пользователь изменен");
                 return new BaseResponse<UserInfo>()
                 {
                     Data = userInfo,
@@ -214,6 +223,7 @@ namespace Bank.Service.Implementations
             }
             catch (Exception ex)
             {
+                _logger.LogInformation($"[UserService.EditUser] error: {ex.Message}");
                 return new BaseResponse<UserInfo>()
                 {
                     Description = $"[EditUserInfo] : {ex.Message}",
@@ -221,5 +231,35 @@ namespace Bank.Service.Implementations
                 };
             }
         }
+        public async Task<IBaseResponse<bool>> ImportUserInfo(UserInfoViewModel model) //not done with logger
+        {
+            try
+            {
+                var userInfo = await _userInfoRepository.GetAll().FirstOrDefaultAsync(x => x.service_number == model.service_number);
+                if (userInfo != null)
+                {
+                    await EditUserInfo(model.service_number, model);
+                }
+                else
+                {
+                    await CreateUserInfo(model);
+                }
+                return new BaseResponse<bool>()
+                {
+                    StatusCode = StatusCode.OK,
+                    Data = true
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<bool>()
+                {
+                    Description = $"[ImportUser] : {ex.Message}",
+                    StatusCode = StatusCode.InternalServerError
+                };
+            }
+        }
+
     }
 }

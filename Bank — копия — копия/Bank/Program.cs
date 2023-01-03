@@ -1,19 +1,13 @@
 using Bank;
 using Bank.DAL;
-using Bank.DAL.Interfaces;
-using Bank.DAL.Repositories;
-using Bank.Service.Interfaces;
-using Bank.Service;
-using Microsoft.EntityFrameworkCore;
-using Bank.Service.Implementations;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
 
 var connection = builder.Configuration.GetConnectionString("WebApiDatabase");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -29,6 +23,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.InitializeRepositories();
 builder.Services.InitializeServices();
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // wtf
 
 
 // Configure the HTTP request pipeline.
@@ -48,8 +43,10 @@ app.UseAuthorization();
 app.UseAuthentication();
 
 
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
+//app.Lifetime.ApplicationStopped.Register()

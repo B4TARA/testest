@@ -1,12 +1,10 @@
 ﻿using Bank.Domain.Enum;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Bank.Domain.Models
 {
     public class UserInfo
     {
-        public int service_number {get;set;}
+        public int service_number { get; set; }
         public string fullname { get; set; }
         public string position_name { get; set; }
         public DateTime position_date { get; set; }

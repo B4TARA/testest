@@ -1,24 +1,15 @@
 ﻿using Bank.DAL.Interfaces;
 using Bank.Domain.Models;
-using Bank.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bank.DAL.Repositories
 {
-    public class UserInfoRepository: IBaseRepository<UserInfo>
+    public class UserInfoRepository : IBaseRepository<UserInfo>
     {
         private readonly ApplicationDbContext _db;
         public UserInfoRepository(ApplicationDbContext db)
         {
             _db = db;
         }
-
 
         public async Task Create(UserInfo entity)
         {
@@ -38,7 +29,7 @@ namespace Bank.DAL.Repositories
         public async Task<UserInfo> Update(UserInfo entity)
         {
             _db.UserInfo.Update(entity);
-            //_db.SaveChangesAsync(); //
+            await _db.SaveChangesAsync();
             return entity;
         }
     }

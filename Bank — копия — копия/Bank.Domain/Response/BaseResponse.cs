@@ -1,9 +1,4 @@
 ﻿using Bank.Domain.Enum;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bank.Domain.Response
 {
@@ -19,10 +14,10 @@ namespace Bank.Domain.Response
 
     public interface IBaseResponse<T>
     {
-        string Description { get; set; }
+        string Description { get;}
 
-        StatusCode StatusCode { get; set; }
+        StatusCode StatusCode { get;}
 
-        T Data { get; set; }
+        T Data { get; }
     }
 }

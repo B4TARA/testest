@@ -2,7 +2,7 @@
 
 namespace Bank.Controllers
 {
-    public class MatrixController: Controller
+    public class MatrixController : Controller
     {
     }
 }

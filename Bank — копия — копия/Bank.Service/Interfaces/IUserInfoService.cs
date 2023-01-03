@@ -1,23 +1,18 @@
 ﻿using Bank.Domain.Models;
 using Bank.Domain.Response;
 using Bank.Domain.ViewModels.UserInfo;
-using Bank.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bank.Service.Interfaces
 {
     public interface IUserInfoService
     {
-        IBaseResponse<List<UserInfo>> GetAllUserInfo();
-        Task<IBaseResponse<UserInfo>> GetUserInfo(int id);
-        Task<IBaseResponse<bool>> DeleteUserInfo(int id);
+        Task<BaseResponse<IEnumerable<UserInfo>>> GetAllUserInfo();
+        Task<BaseResponse<UserInfo>> GetUserInfo(string login);
+        Task<IBaseResponse<bool>> DeleteUserInfo(int service_number);
         Task<IBaseResponse<UserInfo>> CreateUserInfo(UserInfoViewModel model);
-        Task<IBaseResponse<UserInfo>> EditUserInfo(int id, UserInfoViewModel model);
+        Task<IBaseResponse<UserInfo>> EditUserInfo(int service_number, UserInfoViewModel model);
+        Task<IBaseResponse<bool>> ImportUserInfo(UserInfoViewModel model);
 
-
+        //Task<IBaseResponse<bool>> ExcelParser(UserInfoViewModel model);
     }
 }

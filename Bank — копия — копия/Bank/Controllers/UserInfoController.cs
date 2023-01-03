@@ -1,6 +1,4 @@
-﻿using Bank.DAL.Interfaces;
-using Bank.Domain.Models;
-using Bank.Domain.ViewModels.UserInfo;
+﻿using Bank.Domain.ViewModels.UserInfo;
 using Bank.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,19 +14,19 @@ namespace Bank.Controllers
             _userInfoService = userInfoService;
         }
 
-        public IActionResult GetAllUserInfo()
+        public async Task<IActionResult> GetAllUserInfo()
         {
-            var response = _userInfoService.GetAllUserInfo();
-            if(response.StatusCode == Domain.Enum.StatusCode.OK)
+            var response = await _userInfoService.GetAllUserInfo();
+            if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
                 return View(response.Data);
             }
             return RedirectToAction("Error");
         }
 
-        public async Task<IActionResult> GetUserInfo(int id)
+        public async Task<IActionResult> GetUserInfo()
         {
-            var response = await _userInfoService.GetUserInfo(id);
+            var response = await _userInfoService.GetUserInfo(User.Identity.Name);
             if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
                 return View(response.Data);
@@ -51,12 +49,12 @@ namespace Bank.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateUserInfo(int id)
         {
-           if(id == 0)
+            if (id == 0)
             {
                 return View();
             }
-           var response = await _userInfoService.GetUserInfo(id);
-            if(response.StatusCode == Domain.Enum.StatusCode.OK)
+            var response = await _userInfoService.GetUserInfo(User.Identity.Name); // WTFFFFFFF
+            if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
                 return View(response.Data);
             }
@@ -66,9 +64,9 @@ namespace Bank.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUserInfo(UserInfoViewModel model)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                if(model.service_number == 0)
+                if (model.service_number == 0)
                 {
                     await _userInfoService.CreateUserInfo(model);
                 }
