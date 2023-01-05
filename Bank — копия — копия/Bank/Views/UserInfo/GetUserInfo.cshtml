@@ -1,0 +1,116 @@
+﻿@model Bank.Domain.Models.UserInfo
+
+    <div class="content-wrapper">
+        <section class="content">
+<table width='50px'>
+    
+    <tr>
+
+        <th>
+            Табельный номер
+        </th>
+        <th>
+            ФИО
+        </th>
+        <th>
+            Должность
+        </th>
+        <th>
+            Дата в должности
+        </th>
+        <th>
+            Дата приема на работу
+        </th>
+        <th>
+            Дата увольнения
+        </th>
+         <th>
+           Департамент
+        </th>
+        <th>
+            Отдел
+        </th>
+        <th>
+            Сектор
+        </th>
+        <th>
+            Статус работника
+        </th>
+         <th>
+            Баланс
+        </th>
+         <th>
+            Списочный состав
+        </th>
+        <th>
+            Информация о контракте: начало
+        </th>
+        <th>
+            Пароль
+        </th>
+        <th>
+            Информация о контракте: Окончание
+        </th>
+        <th>
+            Кто по жизни
+        </th>
+        <th>
+            email
+        </th>
+        </tr>
+            <tr>
+                <td>
+                    @Model.service_number
+                </td>
+                <td>
+                @Model.fullname
+                </td>
+                <td>
+                @Model.position_name
+                </td>
+                <td>
+                @Model.position_date
+                </td>
+                <td>
+                @Model.hire_date
+                </td>
+                <td>
+                @Model.dismiss_date
+                </td>
+                <td>
+                @Model.department
+                </td>
+                 <td>
+                @Model.division_name
+                </td>
+                 <td>
+                @Model.sector_name
+                </td>
+                 <td>
+                @Model.status
+                </td>
+                 <td>
+                @Model.workday_balance
+                </td>
+                 <td>
+                @Model.list_number
+                </td>
+                 <td>
+                @Model.start_date
+                </td>
+                 <td>
+                @Model.pass
+                </td>
+                <td>
+                @Model.end_date
+                </td>
+                <td>
+                @Model.user_role
+                </td>
+                <td>
+                    @Model.login
+                </td>
+            </tr> 
+</table>
+</section>
+</div>

@@ -1,0 +1,119 @@
+﻿@model List<Bank.Domain.Models.UserInfo>
+
+<div class="content-wrapper">
+    <section class="content">
+<table width='50px'>
+    
+    <tr>
+
+        <th>
+            Табельный номер
+        </th>
+        <th>
+            ФИО
+        </th>
+        <th>
+            Должность
+        </th>
+        <th>
+            Дата в должности
+        </th>
+        <th>
+            Дата приема на работу
+        </th>
+        <th>
+            Дата увольнения
+        </th>
+         <th>
+           Департамент
+        </th>
+        <th>
+            Отдел
+        </th>
+        <th>
+            Сектор
+        </th>
+        <th>
+            Статус работника
+        </th>
+         <th>
+            Баланс
+        </th>
+         <th>
+            Списочный состав
+        </th>
+        <th>
+            Информация о контракте: начало
+        </th>
+        <th>
+            Пароль
+        </th>
+        <th>
+            Информация о контракте: Окончание
+        </th>
+        <th>
+            Кто по жизни
+        </th>
+        <th>
+            email
+        </th>
+        </tr>
+    @foreach(var item in Model )
+    {
+            <tr>
+                <td>
+                    @item.service_number
+                </td>
+                <td>
+                    @item.fullname
+                </td>
+                <td>
+                    @item.position_name
+                </td>
+                <td>
+                    @item.position_date
+                </td>
+                <td>
+                    @item.hire_date
+                </td>
+                <td>
+                    @item.dismiss_date
+                </td>
+                <td>
+                    @item.department
+                </td>
+                 <td>
+                    @item.division_name
+                </td>
+                 <td>
+                    @item.sector_name
+                </td>
+                 <td>
+                    @item.status
+                </td>
+                 <td>
+                    @item.workday_balance
+                </td>
+                 <td>
+                    @item.list_number
+                </td>
+                 <td>
+                    @item.start_date
+                </td>
+                 <td>
+                    @item.pass
+                </td>
+                <td>
+                    @item.end_date
+                </td>
+                <td>
+                    @item.user_role
+                </td>
+                <td>
+                    @item.login
+                </td>
+            </tr> 
+    }
+</table>
+</section>
+</div>

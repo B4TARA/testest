@@ -1,0 +1,72 @@
+﻿@model List<List<Matrix>>
+
+<div class="content-wrapper">
+    <section class="content">
+    <table width='50px'>
+        <tr>
+            <th>
+                Роль
+            </th>
+            <th>
+                Подроль
+            </th>
+            <th>
+                Должность
+            </th>
+            <th>
+                Группа грейда
+            </th>
+            <th>
+                Номер грейда
+            </th>
+            <th>
+                ФОТ Минск (с учетом налогов)
+            </th>
+            <th>
+                ФОТ Минск (Отдел по работе с корпоративными клиентами и партнерами [исходящая линия])* (с учетом налогов)
+            </th>
+            <th>
+                ФОТ Регион (с учетом налогов)
+            </th>
+            <th>
+                ФОТ Бобруйск (с учетом налогов)
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            @foreach (var clas in item)
+            {
+                <tr>
+                    <td>
+                        @clas.structure_role
+                    </td>
+                    <td>
+                        @clas.subrole
+                    </td>
+                    <td>
+                        @clas.position_name
+                    </td>
+                    <td>
+                        @clas.grade_group
+                    </td>
+                    <td>
+                        @clas.grade_number
+                    </td>
+                    <td>
+                        @clas.fot_high
+                    </td>
+                    <td>
+                        @clas.fot_middle
+                    </td>
+                    <td>
+                        @clas.fot_region
+                    </td>
+                    <td>
+                        @clas.fot_low
+                    </td>
+                </tr>
+            }
+        }
+    </table>
+</section>
+</div>
