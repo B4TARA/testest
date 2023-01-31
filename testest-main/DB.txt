@@ -1,0 +1,140 @@
+CREATE TABLE public."ASSESSMENT_INFO" (
+	assessment_name int4 NOT NULL,
+	service_number int4 NOT NULL,
+	role_before_grade text NOT NULL,
+	subrole_before_grade text NOT NULL,
+	department_before_grade text NOT NULL,
+	division_before_grade text NOT NULL,
+	sector_before_grade text NOT NULL,
+	position_before_grade text NOT NULL,
+	salary_before_grade text NOT NULL,
+	grade_result text NOT NULL,
+	subrole_after_grade text NOT NULL,
+	position_after_grade text NOT NULL,
+	salary_after_grade text NOT NULL,
+	is_planed bool NOT NULL,
+	conversation_result text NOT NULL,
+	next_assessment_date text NOT NULL,
+	id serial4 NOT NULL,
+	CONSTRAINT "ASSESSMENT_INFO_pk" PRIMARY KEY (id)
+);
+
+
+-- public."ASSESSMENT_INFO" foreign keys
+
+ALTER TABLE public."ASSESSMENT_INFO" ADD CONSTRAINT "ASSESSMENT_INFO_fk0" FOREIGN KEY (service_number) REFERENCES public."USER_INFO"(service_number);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE public."ASSESSMENT_RESULT" (
+	assessment_id int4 NOT NULL,
+	plan_vd text NOT NULL,
+	fact_reason text NULL,
+	fact text NOT NULL,
+	result_vd text NULL,
+	result_kpi int4 NOT NULL,
+	plan_kpi text NOT NULL,
+	plan_kk text NULL,
+	result_kk text NULL,
+	date_kk text NULL,
+	id serial4 NOT NULL,
+	CONSTRAINT "ASSESSMENT_RESULT_pk" PRIMARY KEY (id)
+);
+
+
+-- public."ASSESSMENT_RESULT" foreign keys
+
+ALTER TABLE public."ASSESSMENT_RESULT" ADD CONSTRAINT "ASSESSMENT_RESULT_fk0" FOREIGN KEY (assessment_id) REFERENCES public."ASSESSMENT_INFO"(id);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE public."KK_RESULT" (
+	assessment_id int4 NOT NULL,
+	judge_service_number int4 NOT NULL,
+	judged_service_number int4 NOT NULL,
+	"result" text NOT NULL,
+	"date" date NOT NULL,
+	id serial4 NOT NULL,
+	CONSTRAINT "KK_RESULT_pk" PRIMARY KEY (id)
+);
+
+
+-- public."KK_RESULT" foreign keys
+
+ALTER TABLE public."KK_RESULT" ADD CONSTRAINT "KK_RESULT_fk0" FOREIGN KEY (assessment_id) REFERENCES public."ASSESSMENT_INFO"(id);
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE public."MATRIX" (
+	"role" text NOT NULL,
+	subrole text NOT NULL,
+	position_name text NOT NULL,
+	grade_group text NOT NULL,
+	grade_number text NOT NULL,
+	fot_high text NOT NULL,
+	fot_middle text NOT NULL,
+	fot_region text NOT NULL,
+	fot_low text NOT NULL,
+	"type" text NOT NULL
+);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE public."USER_INFO" (
+	service_number int4 NOT NULL,
+	fullname text NOT NULL,
+	position_name text NOT NULL,
+	position_date date NOT NULL,
+	hire_date date NOT NULL,
+	dismiss_date date NULL,
+	department text NOT NULL,
+	division_name text NOT NULL,
+	sector_name text NOT NULL,
+	status text NOT NULL,
+	workday_balance text NOT NULL,
+	list_number text NOT NULL,
+	start_date date NOT NULL,
+	"password" text NOT NULL,
+	end_date date NOT NULL,
+	user_role int4 NOT NULL,
+	email text NOT NULL,
+	CONSTRAINT "USER_INFO_email_key" UNIQUE (email),
+	CONSTRAINT "USER_INFO_pk" PRIMARY KEY (service_number)
+);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE public."USER_STRUCTURE" (
+	service_number int4 NOT NULL,
+	grade_group text NOT NULL,
+	grade_number text NOT NULL,
+	"role" text NOT NULL,
+	subrole text NOT NULL,
+	subrole_date date NOT NULL,
+	subrole_reason text NOT NULL,
+	role_category int4 NOT NULL,
+	fot_mark text NOT NULL,
+	manager_service_number int4 NOT NULL,
+	manager_fullname text NOT NULL,
+	chief_service_number int4 NOT NULL,
+	chief_fullname text NOT NULL,
+	director_service_number int4 NOT NULL,
+	director_fullname text NOT NULL,
+	block_name text NOT NULL,
+	curator_service_number int4 NOT NULL,
+	curator_fullname text NOT NULL,
+	id int4 NOT NULL DEFAULT nextval('"USER_FUNCTION_id_seq"'::regclass),
+	CONSTRAINT "USER_FUNCTION_pk" PRIMARY KEY (id)
+);
+
+
+-- public."USER_STRUCTURE" foreign keys
+
+ALTER TABLE public."USER_STRUCTURE" ADD CONSTRAINT "USER_FUNCTION_fk0" FOREIGN KEY (service_number) REFERENCES public."USER_INFO"(service_number);
+
